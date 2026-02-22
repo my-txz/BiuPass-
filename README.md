@@ -3,6 +3,8 @@
 > **Closed Source Software. All Rights Reserved.**  
 > 闭源软件，版权所有。
 
+## 快速 、 方便 、 兼容性广 。
+
 目前作者不打算开源，但不排除将来开源的可能性。
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)
