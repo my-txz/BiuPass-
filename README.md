@@ -7,6 +7,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)
 ![Flask](https://img.shields.io/badge/Flask-Latest-green.svg)
+![Web](https://img.shields.io/badge/web_client-Any%20Browser-lightgrey)
 ![License](https://img.shields.io/badge/License-Closed%20Source-red.svg)
 
 ## Introduction / 简介
@@ -15,7 +16,7 @@ BiuPass is a lightweight, secure file transfer system designed for enterprise LA
 BiuPass 是一个专为的企业局域网设计的轻量级安全文件传输系统。专注于隐私保护、易用性以及广泛的兼容性，无需复杂的服务器配置即可运行。
 
 Built with Python 3.11+ and Flask, it runs smoothly on Windows, Linux, and macOS. Whether you are in a dormitory, office, or lab, just start the script and share files instantly.  
-基于 Python 3.11+ 和 Flask 构建，可在 Windows、Linux 和 macOS 上流畅运行。无论你在宿舍、办公室还是实验室，只需启动脚本即可即时共享文件。
+基于 Python 3.11+ 和 Flask 构建，可在 Windows 上流畅运行。无论你在宿舍、办公室还是实验室，只需启动脚本即可即时共享文件。
 
 ## ⚠️ Important Notice / 重要提示
 
@@ -31,9 +32,6 @@ We do not plan to open-source the codebase. The compiled binaries are available 
     **安全性：** 请勿部署在公网。本系统仅设计用于受信任的局域网。
 
 ## Features / 特性
-
--   **Cross-Platform Compatibility:** Runs on any device with Python support.  
-    **跨平台兼容：** 在任何支持 Python 的设备上均可运行。
 -   **Secure Transfer:** Uses stream cipher encryption and token-based download links.  
     **安全传输：** 使用流密码加密和基于 Token 的下载链接。
 -   **Admin Control:** Host can approve password change requests from clients.  
@@ -59,37 +57,98 @@ The files have been packaged and do not require installation of additional depen
 If you encounter issues opening the file, please download Visual Studio 2022. Download link:
 https://visualstudio.microsoft.com/zh-hans/downloads/
 
-### 3. Access / 访问
-Open your browser and go to `http://<your-ip>:5000`. The default PIN is `1234`.  
-打开浏览器访问 `http://<你的 IP>:5000`。默认 PIN 码为 `1234`。
+## 🚀 How to Use
 
-## Configuration / 配置说明
 
-The `config.json` file handles all settings. You don't need to edit it manually usually, but here are the key parameters:  
-`config.json` 文件处理所有设置。通常无需手动编辑，但以下是关键参数：
 
--   `server.port`: Listening port (Default: 5000).  
-    监听端口（默认：5000）。
--   `security.default_pin`: Access password. Change this immediately after first login.  
-    访问密码。首次登录后请立即修改。
--   `storage.upload_folder`: Where files are saved (Default: `./uploads`).  
-    文件保存位置（默认：`./uploads`）。
--   `transfer.chunk_size_kb`: Buffer size for transfer stability.  
-    传输缓冲区大小。
 
-## Technical Details / 技术细节
+### 1. Download & Run (Host)
+Go to the [Releases](https://github.com/my-txz/BiuPass-/releases) page and grab the latest Releases.
 
-For those interested in the underlying logic:  
-对于关心底层逻辑的朋友：
+*   **Double click** the exe file.
+*   That's it. No `pip install`, no python env setup. It's bundled.
+*   Wait a second. You'll see a black window showing:
+    ```text
+    Server IP: 192.168.1.55
+    Password: 1234
+    Security: HTTPS Enabled (Self-Signed)
+    ```
+*   **Note:** The first time you run it, it generates SSL certificates (`cert.pem`, `key.pem`). This might take a few seconds depending on your CPU.
 
--   **Encryption:** Uses a custom `StreamCipher` based on SHA256 hashing for lightweight obfuscation.  
-    **加密：** 使用基于 SHA256 哈希的自定义 `StreamCipher` 进行轻量级混淆。
--   **Security:** CSRF protection enabled by default. Download tokens expire after 5 minutes (TTL).  
-    **安全：** 默认启用 CSRF 保护。下载 Token 5 分钟后过期。
--   **Concurrency:** Multi-threaded file handling to prevent blocking during uploads.  
-    **并发：** 多线程文件处理，防止上传时阻塞。
--   **Device Info:** Frontend detects OS and Browser info for compatibility logging.  
-    **设备信息：** 前端检测操作系统和浏览器信息以记录兼容性。
+### 2. Access from Clients
+Pick up your phone or another laptop connected to the **same WiFi/LAN**.
+
+*   Open Chrome, Safari, Edge, whatever.
+*   Type the address shown in the host window: `https://192.168.1.55:5000`
+*   **Warning:** Your browser will scream "Your connection is not private" or "Risk detected". **This is normal.** It's because we use a self-signed certificate.
+    *   Click **Advanced** -> **Proceed to ... (unsafe)**.
+    *   On iPhone Safari: Tap "Show Details" -> "visit this website".
+*   Login with the PIN (default `1234`).
+
+### 3. Uploading & Downloading
+*   **Upload:** Drag files into the box. Toggle the "Enable Encryption" switch if you want the file stored encrypted.
+*   **Download:** Click the green button. Links expire in 5 mins for safety.
+*   **Delete:** You can delete your own files. Admins can delete anything.
+
+---
+
+## ⚙️ Configuration
+
+A `config.json` file appears in the same folder after first run. You can tweak things there. Restart the exe to apply changes.
+
+```json
+{
+  "server": {
+    "port": 5000,          // Change port if 5000 is busy
+    "use_https": true,     // Set false if you really don't want HTTPS (not recomended)
+    "ssl_cert": "cert.pem",// Cert file path
+    "ssl_key": "key.pem"   // Key file path
+  },
+  "security": {
+    "default_pin": "1234", // CHANGE THIS!
+    "encryption_enabled_default": true, // Default state of the encrypt switch
+    "max_login_attempts": 5 // Brute-force protection limit
+  },
+  "storage": {
+    "upload_folder": "./uploads", // Where files go
+    "temp_folder": "./temp_chunks"// Temp space for processing
+  }
+}
+```
+
+**Pro tip:** If you lose your password, just delete `config.json`. It resets to default.
+
+---
+
+## 🛠 Technical Stuff (for nerds)
+
+*   **Crypto:** We use `cryptography` lib internally. ChaCha20 for data, RSA 2048 for cert generation. Nonce is stored with the file header.
+*   **Concurrency:** Pure threaded model. Config file writes are locked to prevent corruption if multiple admins click at once.
+*   **Memory:** File downloads use `yield` generators. Even if you have 1GB RAM, you can transfer 100GB files smoothly.
+*   **Security Headers:** HSTS ready (though not forced yet to avoid lockout), X-Frame-Options, XSS protection enabled.
+*   **Rate Limiting:** Login attempts are tracked per IP. 5 fails = 5 min ban.
+
+---
+
+## ⚠️ Important Notes
+
+1.  **Windows Only for Host:** Right now, the `.exe` is compiled for Windows. We might do Linux/Mac later but no promises. Don't ask for source to compile it yourself.
+2.  **Self-Signed Certs:** Browsers hate self-signed certs. You *must* manually accept the warning every time you visit a new IP or after cert regeneration. It's safe though, promise.
+3.  **LAN Only:** This is NOT for public internet. Do not port forward this to the web unless you know exactly what you are doing. It's designed for trusted local networks.
+4.  **Firewall:** If others can't connect, check your Windows Firewall. Allow `BiuPass_v2.1.exe` through private networks.
+5.  **Closed Source:** Stop asking for the code. It's closed. Forever. Use the binary or don't use it.
+
+---
+
+## 🐛 Known Issues & Compatiblity
+
+*   **IE Browser:** Might look ugly. Use Chrome or Edge plz.
+*   **Huge Files:** If uploading >10GB, ensure your disk has space. The temp folder cleans up but better safe than sorry.
+*   **Mobile Safari:** Sometimes the "Add to Home Screen" breaks the drag-drop zone. Just tap the box to select files instead.
+*   **Antivirus:** Some aggressive AVs might flag the `.exe` because it creates network sockets and encrypts stuff. It's a false positive. Add an exception if needed.
+
+---
+
 
 ## Support & Issues / 支持与问题
 
